@@ -27,5 +27,8 @@ int main(int argc, char const *argv[])
     while (!srv.check());
     std::cout<<"exiting\n";
     
+    #if defined(_WIN32)
+    WSACleanup();
+    #endif
     return EXIT_SUCCESS;
 }

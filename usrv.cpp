@@ -6,11 +6,12 @@
 userver::userver(uint16_t port)
 {
 
-        this->srv_sock=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        this->srv_sock=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);//IPPROTO_TCP
 
         // usockaddr addr={0};
         struct sockaddr_in server;
-        server.sin_addr.s_addr=INADDR_ANY;
+        server.sin_addr.s_addr=inet_addr("0.0.0.0");
+        // server.sin_addr.s_addr=inet_addr("10.26.0.250");
         server.sin_family=AF_INET;
         server.sin_port=htons(port);
 
@@ -60,7 +61,7 @@ userver::accept_handle(usocket_t conn)
     {
         #if defined(_WIN32)
         int err;
-        char msgbuf[256]; // for a message up to 255 bytes.
+        CHAR msgbuf[256]; // for a message up to 255 bytes.
         msgbuf[0] = '\0'; // Microsoft doesn't guarantee this on man page.
         err = WSAGetLastError();
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, // flags
@@ -70,9 +71,8 @@ userver::accept_handle(usocket_t conn)
                       msgbuf,                                                     // output buffer
                       sizeof(msgbuf),                                             // size of msgbuf, bytes
                       NULL);                                                      // va_list of arguments
-        if (!*msgbuf)
-            sprintf(msgbuf, "%d", err); // provide error # if no string available
-        std::cout<< msgbuf<<std::endl;
+
+        std::cout<<"err"<<err<<"::"<< msgbuf<<std::endl;
         #endif
     }
     
@@ -108,16 +108,6 @@ userver::read_handle(usocket_t conn)
             std::cout << this->messages[conn].str()<<std::endl;
         
         
-        
-//         data = conn.recv(1024)
-//         if data:
-//             if self.messages.get(conn, None):
-//                 self.messages[conn].append(data)
-//             else:
-//                 self.messages[conn] = [data]
-
-
-
 
 //          # добавляем соединение клиента в очередь 
 //          # на готовность к приему сообщений от сервера
@@ -131,21 +121,9 @@ userver::read_handle(usocket_t conn)
 
 
         }else{
-//         else:
-//             print('Клиент отключился...')
 //             # если сообщений нет, то клиент
 //             # закрыл соединение или отвалился 
 //             # удаляем его сокет из всех очередей
-//             if conn in self.outputs:
-//                 self.outputs.remove(conn)
-//             self.inputs.remove(conn)
-//             # закрываем сокет как положено, тем 
-//             # самым очищаем используемые ресурсы
-//             conn.close()
-//             # удаляем сообщения для данного сокета
-//             if conn in self.messages:
-//                 del self.messages[conn]
-//         pass
             if(this->outputs.find(conn)!=this->outputs.cend())
             {
                 this->outputs.erase(conn);
@@ -154,8 +132,14 @@ userver::read_handle(usocket_t conn)
             {
                 this->inputs.erase(conn);
             }
-            // this->inputs.erase(conn);
+
+//             # закрываем сокет как положено, тем 
+//             # самым очищаем используемые ресурсы
+//             conn.close()
             shutdown(conn,SHUT_RDWR);
+
+
+//             # удаляем сообщения для данного сокета
             if(this->messages.find(conn)!=this->messages.cend())
             {
                 this->messages.erase(conn);
@@ -210,34 +194,25 @@ if(this->messages.find(conn)!=this->messages.cend())
 void
 userver::data_handle(usocket_t conn)
 {
-        // def handle_data(self,conn,data:str):
-        // buffer = io.StringIO(data)
-        // line=next(buffer)
+
         send(conn,"HTTP/1.1 200 OK\r\n",17, 0);
         send(conn,"\r\nBeee",6,0);
-        // conn.send(b"HTTP/1.1 200 OK\r\n")
-        // conn.send(b"\r\nBeee")
 
        
         if(this->inputs.find(conn)!=this->inputs.cend())
         {
             this->inputs.erase(conn);
-             std::cout<<"one\n";
+            //  std::cout<<"one\n";
         }
         
         if(this->outputs.find(conn)!=this->outputs.cend())
         {
             this->outputs.erase(conn);
-            std::cout<<"two\n";
+            // std::cout<<"two\n";
         }
         erase(conn);
-        // std::cout<<conn<<"tree\n";
-        // shutdown(conn,SHUT_RDWR);
-        // self.inputs.remove(conn)
-        // self.outputs.remove(conn)
-        // conn.close()
-        // pass
-        std::cout<<"four\n";
+
+        // std::cout<<"four\n";
 
 }
 
@@ -282,7 +257,7 @@ userver::check()
             }
             
             
-            // it=*inputs.rbegin();
+
             largest_sock=*inputs.rbegin();
             if(!outputs.empty())
             ls=*outputs.rbegin();
@@ -291,6 +266,7 @@ userver::check()
             largest_sock=std::max(largest_sock,ls);
 
             // std::cout<<largest_sock<<"LS!\n";
+
             int ret = select( largest_sock + 1, &fd_in, &fd_out, &fd_err, &tv );
             // проверяем успешность вызова
             if ( ret == -1 )

@@ -21,7 +21,11 @@
 class userver
 {
 protected:
+    #if defined(_WIN32)
+    typedef SOCKET usocket_t;
+    #else
     typedef int usocket_t;
+    #endif
     typedef union
     {
         sockaddr_in sa_in;
@@ -29,7 +33,7 @@ protected:
         
     }usockaddr;
     
-    usocket_t srv_sock;
+    usocket_t srv_sock =INVALID_SOCKET;
 
     std::set<usocket_t> inputs;
     std::set<usocket_t> outputs;
