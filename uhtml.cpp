@@ -29,14 +29,14 @@ uhtml::~uhtml()
 }
 
 void 
-uhtml::send_file_from_json(usocket_t conn, std::string& host)
+send_file_from_json(uhtml* h,uhtml::usocket_t conn, std::string& host)
 {
         // TODO: здесь должна быть проверка входных данных
         //отправляем статус (например 200 OK\n)
-        this->send_code(conn,json_obj[host]["code"]);
+        h->send_code(conn, h->json_obj[host]["code"]);
 
         //ищем в schema.json путь к файлу
-        auto file_path=json_obj[host]["path"].get<std::string>();
+        auto file_path= h->json_obj[host]["path"].get<std::string>();
 
         //Открываем файл 
         std::ifstream f(file_path,std::ios::binary);
@@ -54,7 +54,7 @@ uhtml::send_file_from_json(usocket_t conn, std::string& host)
         send(conn,_meta.str().c_str(),_meta.str().length(),0);
 
         // TODO: это костыль
-        this->parse_post();
+        // h->parse_post();
         
         //читаем файл и отправляем кусками размером MTU (1500)
         char buffer[1500]={0};
@@ -69,10 +69,10 @@ uhtml::send_file_from_json(usocket_t conn, std::string& host)
 }
 
 void 
-uhtml::send_file_from_json(usocket_t conn, const char* host)
+send_file_from_json(uhtml* h,uhtml::usocket_t conn, const char* host)
 {
     std::string _host=host;
-    send_file_from_json(conn, _host);
+    send_file_from_json(h, conn, _host);
 }
 
 void 
@@ -83,9 +83,9 @@ uhtml::generate_html(usocket_t conn)
     // if parsed_url in self.file_pages:
     if (json_obj.find(this->meta[conn]["Host"]) != json_obj.end()) 
     {
-        send_file_from_json(conn, this->meta[conn]["Host"]);
+        send_file_from_json(this,conn, this->meta[conn]["Host"]);
     }else{
-        send_file_from_json(conn, "404");
+        send_file_from_json(this,conn, "404");
     }
 
 }
@@ -104,3 +104,25 @@ uhtml::parse_post()
  
 }
 
+void 
+uhtml::add_service(std::string& name,  uhtml::_serviceFunction func)
+{
+    services.insert(std::pair<const std::string, uhtml::_serviceFunction>(name,func));
+}
+
+void 
+uhtml::add_service(const char* name,  uhtml::_serviceFunction func)
+{
+    std::string _name=name;
+    this->add_service(_name,  func);
+}
+
+
+void simple_serviceFunction(uhtml* h, int conn, nlohmann::json POST_data_parsed_to_JSON)
+{
+    // send_file_from_json(h, conn, "404");
+    if(POST_data_parsed_to_JSON["shutdown"]==true)
+    {
+        h->terminate();
+    };
+}

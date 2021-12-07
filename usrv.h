@@ -20,12 +20,14 @@
 
 class userver
 {
-protected:
+
+public:
     #if defined(_WIN32)
     typedef SOCKET usocket_t;
     #else
     typedef int usocket_t;
     #endif
+protected:
     typedef union
     {
         sockaddr_in sa_in;
@@ -48,7 +50,7 @@ protected:
     virtual void erase(usocket_t);
     bool terminate_req=false;
 public:
-    
+    void terminate(){terminate_req=true;}
     userver(uint16_t port=8088);
     ~userver();
     bool check(void);
