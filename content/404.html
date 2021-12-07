@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Not found!</title>
+    <style>
+      header, nav, main, footer {
+        max-width: 1200px;
+        margin: 0px auto;
+      }
+      @media (min-width: 1200px) {
+        .full-screen {
+          width: 50vw;
+          margin-left: 50%;
+        }
+        .full-screen > div {
+          width: 100vh;
+          margin-left: -50%;
+          
+        }
+        .full-screen img {
+          display: block;
+          max-width: 100%;
+          height: auto;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header></header>
+    <nav></nav>
+    <main>
+      <article>
+          <!-- <p style="text-align: center;">Не там ищешь, друг..</p> -->
+        <div class="full-screen">
+          <div> <img src="./error404.png" alt="Не там ищешь, друг.." /> </div>
+        </div>
+      </article>
+    </main>
+    <footer></footer>
+  </body>
+<html>
