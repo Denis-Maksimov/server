@@ -10,8 +10,10 @@ OBJ:=\
 main.o \
 uhtml.o \
 uhttp.o \
-usrv.o 
-# LDFLAGS:=  -lwinmm -lws2_32
+usrv.o \
+./ctrlPage/serverCtrlPage.o 
+
+LDFLAGS:=  -lwinmm -lws2_32
 CPPFLAGS+= -g 
 .PHONY: clean
 
@@ -22,6 +24,8 @@ main.o:
 uhtml.o: 
 uhttp.o:
 usrv.o:
+./ctrlPage/serverCtrlPage.o:
+
 
 clean:
 	rm -f $(OBJ) main

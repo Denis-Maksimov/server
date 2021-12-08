@@ -1,23 +1,8 @@
 #include "uhtml.h"
 #include <iostream>
+#include "ctrlPage/serverCtrlPage.h"
 // #include <sysexits.h>
 // #include <signal.h>
-
-void simple_serviceFunction(uhtml* h, uhtml::usocket_t conn, const char* POST_JSON)
-{
-    nlohmann::json parsed=nlohmann::json::parse(POST_JSON);
-    
-    if (1==parsed.count("shutdown"))
-    {
-       
-        if(parsed["shutdown"]==true)
-        {
-            h->terminate();
-        };
-    }
-    
-}
-
 
 
 

@@ -47,7 +47,7 @@
     },
     "ctrl":
     {
-        "path":"content/serverCtrlPage.html",
+        "path":"ctrlPage/serverCtrlPage.html",
         "code":200,
         "headers":
         {
@@ -66,11 +66,7 @@
     "_sys_":
     {
         "function":"_sys_",
-        "code":200,
-        "headers":
-        {
-            "content-type":"text/plain"
-        }
+        "code":200
     }
 
 }

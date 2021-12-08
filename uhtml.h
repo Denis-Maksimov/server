@@ -1,4 +1,6 @@
 // #include <nlohmann/json.hpp>
+#ifndef UHTML_H
+#define UHTML_H
 #include "json.hpp"
 #include "uhttp.h"
 
@@ -10,11 +12,11 @@ private:
     nlohmann::json json_obj; //schema.json
     protected:
     void generate_html(usocket_t conn) override;
-    void update_schema(const char* path);
-    void update_schema();
     void parse_post();
     
 public:
+    void update_schema(const char* path);
+    void update_schema();
     typedef void(*_serviceFunction)(uhtml* h,usocket_t conn, const char* POST_data_parsed_to_JSON);
     uhtml(uint16_t port);
     ~uhtml();
@@ -25,3 +27,4 @@ public:
     void add_service(std::string&,  _serviceFunction);
     void add_service(const char*,  _serviceFunction);
 };
+#endif // !UHTML_H
