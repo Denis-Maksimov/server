@@ -1,11 +1,16 @@
 
 #include "usrv.h"
+#if defined(__linux__)
+#include <csignal>
+#endif
 
-
+void signal_handler(int signal){}
 //=========================================================================
 userver::userver(uint16_t port)
 {
-
+        #if defined(__linux__)
+            std::signal(SIGPIPE, signal_handler);
+        #endif
         this->srv_sock=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);//IPPROTO_TCP
 
         // usockaddr addr={0};
@@ -382,4 +387,10 @@ void
 userver::erase(usocket_t s)
 {
     
+}
+
+void 
+userver::terminate()
+{
+    terminate_req=true;
 }

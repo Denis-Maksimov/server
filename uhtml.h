@@ -4,7 +4,8 @@
 
 class uhtml: public uhttp
 {
-
+    friend void send_file_from_json(uhtml* h,usocket_t conn, std::string& host);
+    friend void send_file_from_json(uhtml* h,usocket_t conn, const char* host);
 private:
     nlohmann::json json_obj; //schema.json
     protected:
@@ -12,10 +13,9 @@ private:
     void update_schema(const char* path);
     void update_schema();
     void parse_post();
-    void send_file_from_json(usocket_t conn, std::string& host);
-    void send_file_from_json(usocket_t conn, const char* host);
+    
 public:
-    typedef void(*_serviceFunction)(usocket_t conn, nlohmann::json POST_data_parsed_to_JSON);
+    typedef void(*_serviceFunction)(uhtml* h,usocket_t conn, const char* POST_data_parsed_to_JSON);
     uhtml(uint16_t port);
     ~uhtml();
 private:

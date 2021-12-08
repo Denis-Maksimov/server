@@ -30,7 +30,11 @@
                         alert(rq.responseText);
                     }
                 }
-                http.send("terminate")
+                let params = {
+                    shutdown: true,
+                };
+                let json = JSON.stringify(params);
+                http.send(json);
             }
             function update_schema()
             {

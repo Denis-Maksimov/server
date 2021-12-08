@@ -110,7 +110,7 @@ uhttp::data_handle(usocket_t conn)
         this->post.clear();
         this->post << this->messages[conn].rdbuf();
 
-        std::cout << this->post.str();
+        // std::cout << this->post.str();
   
 
     }while (false);

@@ -8,6 +8,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 #include <set>
 #include <map>
@@ -26,6 +27,7 @@ public:
     typedef SOCKET usocket_t;
     #else
     typedef int usocket_t;
+    #define INVALID_SOCKET -1
     #endif
 protected:
     typedef union
@@ -50,10 +52,11 @@ protected:
     virtual void erase(usocket_t);
     bool terminate_req=false;
 public:
-    void terminate(){terminate_req=true;}
+    void terminate();
     userver(uint16_t port=8088);
     ~userver();
     bool check(void);
 };
+
 
 #endif

@@ -54,15 +54,6 @@
             "content-type":"text/html"
         }
     },
-    "_sys_":
-    {
-        "path":"content/autors.txt",
-        "code":200,
-        "headers":
-        {
-            "content-type":"text/plain"
-        }
-    },
     "cat-teapot-418.jpg":
     {
         "path":"content/cat-teapot-418.jpg",
@@ -70,6 +61,15 @@
         "headers":
         {
             "content-type":"image/jpeg"
+        }
+    },
+    "_sys_":
+    {
+        "function":"_sys_",
+        "code":200,
+        "headers":
+        {
+            "content-type":"text/plain"
         }
     }
 

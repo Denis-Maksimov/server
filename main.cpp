@@ -2,6 +2,25 @@
 #include <iostream>
 // #include <sysexits.h>
 // #include <signal.h>
+
+void simple_serviceFunction(uhtml* h, uhtml::usocket_t conn, const char* POST_JSON)
+{
+    nlohmann::json parsed=nlohmann::json::parse(POST_JSON);
+    
+    if (1==parsed.count("shutdown"))
+    {
+       
+        if(parsed["shutdown"]==true)
+        {
+            h->terminate();
+        };
+    }
+    
+}
+
+
+
+
 int main(int argc, char const *argv[])
 {
     #if defined(_WIN32)
@@ -17,6 +36,7 @@ int main(int argc, char const *argv[])
     #endif
     
     uhtml srv(8081);
+    srv.add_service("_sys_", simple_serviceFunction);
 
     while (!srv.check());
 
