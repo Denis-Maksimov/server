@@ -1,7 +1,3 @@
-CXX:=x86_64-w64-mingw32-g++
-CPP:=x86_64-w64-mingw32-g++
-CC:=x86_64-w64-mingw32-g++
-
 CXX:=g++
 CPP:=g++
 CC:=g++
@@ -12,8 +8,10 @@ uhtml.o \
 uhttp.o \
 usrv.o \
 ./ctrlPage/serverCtrlPage.o 
-
+UNAME:= $(shell uname)
+ifeq ($(UNAME),MINGW64_NT-10.0-19042)
 LDFLAGS:=  -lwinmm -lws2_32
+endif
 CPPFLAGS+= -g 
 .PHONY: clean
 
@@ -27,5 +25,11 @@ usrv.o:
 ./ctrlPage/serverCtrlPage.o:
 
 
+
+ifeq ($(UNAME),MINGW64_NT-10.0-19042)
+clean:
+	rm -f $(OBJ) main.exe
+else
 clean:
 	rm -f $(OBJ) main
+endif
