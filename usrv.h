@@ -51,9 +51,10 @@ protected:
     virtual void data_handle(usocket_t);
     virtual void erase(usocket_t);
     bool terminate_req=false;
+    bool is_cli;
 public:
     void terminate();
-    userver(uint16_t port=8088);
+    userver(uint16_t port=8088,bool is_cli=false);
     ~userver();
     bool check(void);
 };

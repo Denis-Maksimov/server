@@ -1,6 +1,7 @@
 #include "uhtml.h"
 #include <iostream>
 #include "ctrlPage/serverCtrlPage.h"
+#include "ucli.h"
 // #include <sysexits.h>
 // #include <signal.h>
 
@@ -20,8 +21,19 @@ int main(int argc, char const *argv[])
         }
     #endif
     
-    uhtml srv(8081);
-    srv.add_service("_sys_", simple_serviceFunction);
+    // uhtml srv(8081);
+    ucli srv(8083);
+    // srv.add_service("_sys_", simple_serviceFunction);
+    // srv.send_GET("127.0.0.1",8081);
+    nlohmann::json js=R"(
+            {
+                "shutdown": true
+            }
+        )"_json;
+
+    srv.request("http://127.0.0.1:8081/_sys_",js,[](ucli::usocket_t s){
+        std::cout <<"callback\n";
+    });
 
     while (!srv.check());
 

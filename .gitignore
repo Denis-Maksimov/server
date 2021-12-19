@@ -1,4 +1,5 @@
 *.o
 modbus
 rrr
-main
+test_cli
+test_srv

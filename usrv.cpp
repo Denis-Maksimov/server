@@ -6,7 +6,7 @@
 
 void signal_handler(int signal){}
 //=========================================================================
-userver::userver(uint16_t port)
+userver::userver(uint16_t port,bool is_cli):is_cli(is_cli)
 {
         #if defined(__linux__)
             std::signal(SIGPIPE, signal_handler);
@@ -32,9 +32,12 @@ userver::userver(uint16_t port)
             // addr.sa_in.sin_port=htons(port);
         }
         std::cout<<"port="<<htons(server.sin_port)<<std::endl;
-        listen(this->srv_sock,3);
 
-        this->inputs.insert(this->srv_sock);//сокеты, которые будем читать
+        this->inputs.clear();
+        if(!is_cli){
+            listen(this->srv_sock,3);
+            this->inputs.insert(this->srv_sock);//сокеты, которые будем читать
+        }
         this->outputs.clear();// сокеты, в которые надо писать
         this->messages.clear();
         // self.timeout=1.
@@ -47,10 +50,12 @@ userver::~userver()
     for (auto &i : inputs)
     {
         shutdown(i,SHUT_RDWR);  
+        std::cout<<"closing: " <<i<<std::endl;
     }
     for (auto &i : outputs)
     {
         shutdown(i,SHUT_RDWR);   
+        std::cout<<"closing: " <<i<<std::endl;
     }
 
 }
@@ -104,28 +109,35 @@ userver::read_handle(usocket_t conn)
 //      # если сокет прочитался и есть сообщение 
 //      # то кладем сообщение в словарь, где 
 //      # ключом будет сокет клиента
-        if(n>=0)
+        if(n>0)
         {
 
             buf[n]='\0';
             this->messages[conn]<<buf;
 
-            std::cout << this->messages[conn].str()<<std::endl;
+            std::cout <<"msg:"<<n<<"\n" <<this->messages[conn].str()<<std::endl;
         
         
 
 //          # добавляем соединение клиента в очередь 
 //          # на готовность к приему сообщений от сервера
-            if(this->outputs.find(conn)==this->outputs.cend())
-            {
-                this->outputs.insert(conn);
-//             if conn not in self.outputs:
-//                 self.outputs.append(conn)
+            if (!this->is_cli)
+            {               
+                if(this->outputs.find(conn)==this->outputs.cend())
+                {
+                    this->outputs.insert(conn);
+    //             if conn not in self.outputs:
+    //                 self.outputs.append(conn)
+                }
             }
 
 
+        }else if(n==0)
+        {
+            this->data_handle(conn);
 
-        }else{
+        }else
+        {
 //             # если сообщений нет, то клиент
 //             # закрыл соединение или отвалился 
 //             # удаляем его сокет из всех очередей
@@ -261,9 +273,10 @@ userver::check()
                 std::cout <<s<<"\n";
             }
             
-            
-
+            if(!inputs.empty())
             largest_sock=*inputs.rbegin();
+            else largest_sock=0;
+
             if(!outputs.empty())
             ls=*outputs.rbegin();
             else ls=0;
@@ -271,6 +284,7 @@ userver::check()
             largest_sock=std::max(largest_sock,ls);
 
             // std::cout<<largest_sock<<"LS!\n";
+            if(this->terminate_req)return this->terminate_req;
 
             int ret = select( largest_sock + 1, &fd_in, &fd_out, &fd_err, &tv );
             // проверяем успешность вызова
@@ -295,7 +309,7 @@ userver::check()
                     // обнаружили событие
                     if ( FD_ISSET( conn, &fd_in ) )
                     {
-                        if(conn==this->srv_sock)
+                        if((conn==this->srv_sock)&&(!this->is_cli))
                         {
                             std::cout<<"accept!\n";
                             //  если это серверный сокет, то пришел новый
