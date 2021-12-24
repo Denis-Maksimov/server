@@ -27,7 +27,8 @@ public:
     ucli(uint16_t port = (uint16_t)8088U);
     ~ucli();
     void send_GET(std::string url,uint16_t port);
-    void request(std::string url,nlohmann::json& data,std::function<void(usocket_t)> f);
+    void request(std::string url,std::stringstream& data,std::function<void(usocket_t)> f);
+    void request(std::string url,std::string data,std::function<void(usocket_t)> f);
 };
 
 

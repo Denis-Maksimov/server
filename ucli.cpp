@@ -162,7 +162,7 @@ ucli::send_GET(std::string url,uint16_t port)
 
 #include <iostream>
 void 
-ucli::request(std::string url,nlohmann::json& data, std::function<void(usocket_t)> f)
+ucli::request(std::string url,std::string data, std::function<void(usocket_t)> f)
 {
     std::regex uri;
     std::smatch groups;
@@ -184,7 +184,7 @@ ucli::request(std::string url,nlohmann::json& data, std::function<void(usocket_t
     server.sin_family=AF_INET;
     server.sin_port=htons(port);
     connect(this->srv_sock,(struct sockaddr *)&server,sizeof(server));
-    
+
     std::stringstream msg;
 //===========HTTP==================
     
@@ -193,9 +193,9 @@ ucli::request(std::string url,nlohmann::json& data, std::function<void(usocket_t
     msg<<"Connection: close"<<std::endl;
     msg<<"User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0"<<std::endl;
     msg<<"Referer: https://www.google.com/"<<std::endl;
-    msg<<"Content-Lenght:"<<data.dump().length()<<std::endl;
+    msg<<"Content-Lenght:"<<data.length()<<std::endl;
     msg<<std::endl;
-    msg<<data.dump()<<std::endl;
+    msg<<data<<std::endl;
     // msg<<std::endl;
 //===========HTTP==================
     send(this->srv_sock,msg.str().c_str(),msg.str().length(),0);
@@ -206,3 +206,9 @@ ucli::request(std::string url,nlohmann::json& data, std::function<void(usocket_t
 
 
 
+void 
+ucli::request(std::string url,std::stringstream& data, std::function<void(usocket_t)> fu)
+{
+
+    this->request(url,data.str(),fu);
+}

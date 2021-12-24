@@ -82,10 +82,36 @@ send_file_from_json(uhtml* h,uhtml::usocket_t conn, const char* host)
 void 
 uhtml::generate_html(usocket_t conn)
 {
-    
-    // std::cout <<"meta host:" <<this->meta[conn]["Host"]<<std::endl;
+
     // if parsed_url in self.file_pages:
     auto url=this->meta[conn]["Host"];
+    
+    //пробегаем по сервисам и ищем в них страницу
+    for (auto &i : this->Services)
+    {
+        if(1==i.second->get_schema().count(url))
+        {
+            this->send_code(conn, i.second->get_schema()[url]["code"]);
+            //execute service function
+            if(1==i.second->get_schema()[url].count("function"))
+            {
+                auto fname=i.second->get_schema()[url]["function"].get<std::string>();
+                if (1==services.count(fname))
+                {                    
+                    i.second->call_function(fname.c_str(),conn,this->post.str().c_str());
+                }
+            }
+            //send file
+            if(1==i.second->get_schema()[url].count("path"))
+            {
+                send_file_from_json(this,conn, url);
+                this->send_file(conn,i.second->get_schema()[url]["path"].get<std::string>().c_str());
+
+            }
+            return;
+        };
+    }
+    
     if (json_obj.count(url) == 1) 
     {
         //отправляем статус (например 200 OK\n)
@@ -104,17 +130,20 @@ uhtml::generate_html(usocket_t conn)
                 services[fname](this,conn,this->post.str().c_str());
             }
         }
+
+
+        
         
         //send file
         if(1==json_obj[url].count("path"))
         {
             send_file_from_json(this,conn, url);
         }
-
-    }else{
-        this->send_code(conn, 404);
-        send_file_from_json(this,conn, "404");
+        return;
     }
+
+    this->send_code(conn, 404);
+    send_file_from_json(this,conn, "404");
 
 }
 
@@ -145,12 +174,50 @@ uhtml::add_service(const char* name,  uhtml::_serviceFunction func)
     this->add_service(_name,  func);
 }
 
+void 
+uhtml::add_service(const char* name,  uservice* svc)
+{
+    std::string _name=name;
+    Services.insert(std::pair<const std::string,uservice*>(_name,svc));
+    // json_obj.merge_patch(svc->get_schema());
+    // this->add_service(_name,  func);
+}
 
-// void simple_serviceFunction(uhtml* h, int conn, nlohmann::json POST_data_parsed_to_JSON)
-// {
-//     // send_file_from_json(h, conn, "404");
-//     if(POST_data_parsed_to_JSON["shutdown"]==true)
-//     {
-//         h->terminate();
-//     };
-// }
+
+ void 
+ uhtml::send_file(usocket_t conn, const char* file)
+ {
+   
+            //ищем в schema.json путь к файлу
+            // auto file_path= h->json_obj[host]["path"].get<std::string>();
+
+            //Открываем файл 
+            std::ifstream f(file,std::ios::binary);
+
+            //Считаем размер
+            f.seekg(0,std::ios_base::end);
+            auto size= f.tellg();
+            f.seekg(0,std::ios_base::beg);
+
+            //Заполняем поля header-а
+            std::stringstream _meta;
+            _meta<<"Content-Length:"<<size<<std::endl;
+            _meta<<"server:denisx"<<std::endl;
+            _meta<<std::endl;
+            send(conn,_meta.str().c_str(),_meta.str().length(),0);
+
+            // TODO: это костыль
+            // h->parse_post();
+            
+            //читаем файл и отправляем кусками размером MTU (1500)
+            char buffer[1500]={0};
+            while (f)
+            {
+                f.read(buffer,1500);
+                size_t cnt=f.gcount();
+                if(!cnt) break;
+                send(conn,buffer,cnt,0);
+            }
+            f.close();
+
+ }

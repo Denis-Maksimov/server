@@ -31,11 +31,12 @@ int main(int argc, char const *argv[])
             }
         )"_json;
 
-    srv.request("http://127.0.0.1:8081/_sys_",js,[](ucli::usocket_t s){
+    srv.request("http://127.0.0.1:8081/_sys_",js.dump(),[](ucli::usocket_t s){
         std::cout <<"callback\n";
     });
 
-    while (!srv.check());
+    for (size_t i = 1; i < 10 && !srv.check() ; ++i);
+    
 
     std::cout<<"exiting\n";
     

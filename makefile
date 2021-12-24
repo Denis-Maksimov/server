@@ -7,7 +7,8 @@ uhtml.o \
 uhttp.o \
 usrv.o \
 ./ctrlPage/serverCtrlPage.o \
-ucli.o 
+ucli.o \
+uservice.o 
 
 SRV:=$(OBJ) \
 test_srv.o 
@@ -36,7 +37,7 @@ uhttp.o:
 usrv.o:
 ./ctrlPage/serverCtrlPage.o:
 ucli.o:
-
+uservice.o:
 
 ifeq ($(UNAME),MINGW64_NT-10.0-19042)
 clean:
