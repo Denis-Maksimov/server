@@ -2,21 +2,9 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <style>
-            button
-            {
-                background-color: rgb(255, 227, 137);
-                color: rgb(0, 0, 0);
-                border-radius: 15%;
-                border: turquoise;
-                
-            }
-        </style>
+        <link rel="stylesheet" href="serverCtrlPage.css">
     </head>
-    <body style="background-color: rgb(0, 0, 0);
-                align-items: center;
-                justify-content: center;
-                text-align: center;">
+    <body>
         <script>
             function terminate_server()
             {
@@ -58,12 +46,66 @@
             
 
         </script>
+        <script src="chart.js"></script>
         <h1 style="color:rgb(235, 217, 140);">It's alive!</h1>
-        <p style="color: rgb(238, 211, 170);">Remembe and cannot forgote! teapot cannot brew coffe</p>
-        <span>
-            <button onclick="terminate_server();">terminate server</button>
-            <button onclick="update_schema();">update schema</button>
+        <p >Remembe and cannot forgote! teapot cannot brew coffe</p>
+        <div class="button">
+        <span onclick="terminate_server();">
+          terminate server
         </span>
-        <div></div>
+        </div>
+        <div class="button" onclick="update_schema();">
+            <span >
+            update schema
+        </span>
+    </div>
+    
+    <div> 
+      <canvas id="myChart" style="width:100%;max-width:600px;
+       display: initial; 
+       background-color:rgb(44, 48, 51);
+       "></canvas>
+    </div>
+    <div>https://www.w3schools.com/ai/ai_chartjs.asp</div>
+<script>
+var xyValues = [
+  {x:50, y:7},
+  {x:60, y:8},
+  {x:70, y:8},
+  {x:80, y:9},
+  {x:90, y:9},
+  {x:100, y:9},
+  {x:110, y:10},
+  {x:120, y:11},
+  {x:130, y:14},
+  {x:140, y:14},
+  {x:150, y:15}
+];
+
+
+
+var config={
+  type: "scatter",
+  data: {
+    
+    datasets: [{ 
+        label: 'Dataset 1',
+        Radius: 4,
+        
+        data: xyValues
+        }]
+  },
+  options: {
+    legend: {display: true},
+    
+  }
+}
+var myChart = new Chart("myChart", config);
+//========================================
+
+myChart.update();
+</script>
+
+       
     </body>
 </html>

@@ -11,6 +11,7 @@ uservice::~uservice()
 void 
 uservice::update_schema()
 {
+    if(this->schema_path.length()>0)
     this->update_schema(this->schema_path.c_str());
 }
 
@@ -29,17 +30,26 @@ uservice::update_schema(const char* path)
 
 
 void 
-uservice::add_function(const char* name,  callback_t func)
+uservice::add_function(const char* name,void* data,  callback_t func)
 {
+    this->fdata=data;
     functions.insert(std::pair<const std::string, callback_t>(name,func));
 }
 
 void 
-uservice::call_function(const char* name, userver::usocket_t conn, const char* POST_data)
+uservice::add_function(const char* name,  callback_t func)
+{
+    // this->fdata=data;
+    functions.insert(std::pair<const std::string, callback_t>(name,func));
+}
+void 
+uservice::call_function(const char* name, userver::usocket_t conn, std::stringstream& POST_data)
 {
     if (1==functions.count(name))
     {
-        functions[name](conn,POST_data);
+        functions[name](conn,POST_data,this->fdata);
+    }else{
+        std::cerr<<"no function!";
     }
     
 }

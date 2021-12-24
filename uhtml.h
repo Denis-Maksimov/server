@@ -14,7 +14,7 @@ private:
     nlohmann::json json_obj; //schema.json
     protected:
     void generate_html(usocket_t conn) override;
-    void parse_post();
+    // void parse_post();
     
 public:
     void update_schema(const char* path);
@@ -23,12 +23,12 @@ public:
     uhtml(uint16_t port);
     ~uhtml();
 private:
-    std::unordered_map< std::string,  _serviceFunction > services;
+    // std::unordered_map< std::string,  _serviceFunction > services;
     std::unordered_map< std::string,  uservice* > Services;
     nlohmann::json virtual_schema; //schema.json
 public:
-    void add_service(std::string&,  _serviceFunction);
-    void add_service(const char*,  _serviceFunction);
+    // void add_service(std::string&,  _serviceFunction);
+    // void add_service(const char*,  _serviceFunction);
     //================================================
     void add_service(const char*,  uservice*);
 };

@@ -1,0 +1,35 @@
+{
+    "ctrl":
+    {
+        "path":"ctrlPage/serverCtrlPage.html",
+        "code":200,
+        "headers":
+        {
+            "content-type":"text/html"
+        }
+    },
+    "_sys_":
+    {
+        "function":"_sys_",
+        "code":200
+    },
+    "serverCtrlPage.css":
+    {
+        "path":"ctrlPage/serverCtrlPage.css",
+        "code":200,
+        "headers":
+        {
+            "content-type":"text/css"
+        }
+    },
+    "chart.js":
+    {
+        "path":"ctrlPage/chart.js",
+        "code":200,
+        "headers":
+        {
+            "content-type":"text/js"
+        }
+    }
+
+}

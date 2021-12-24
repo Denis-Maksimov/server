@@ -17,6 +17,16 @@
 #include <iostream>
 #include <sstream>
 
+#if defined(_WIN32)
+#define WSASTART do{\
+    WSADATA wsaData; \
+    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0)\
+    {printf("WSAStartup failed\n");\
+    exit(1);}\
+}while(0)
+#else
+#define WSASTART
+#endif
 
 
 class userver
