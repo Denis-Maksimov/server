@@ -22,6 +22,11 @@ void
 uhtml::update_schema()
 {
     this->update_schema("schema.json");
+    for (auto &&i : this->Services)
+    {
+        i.second->update_schema();
+    }
+    
 }
 
 uhtml::~uhtml()
@@ -56,9 +61,6 @@ send_file_from_json(uhtml* h,uhtml::usocket_t conn, std::string& host)
             _meta<<std::endl;
             send(conn,_meta.str().c_str(),_meta.str().length(),0);
 
-            // TODO: это костыль
-            // h->parse_post();
-            
             //читаем файл и отправляем кусками размером MTU (1500)
             char buffer[1500]={0};
             while (f)
@@ -95,45 +97,42 @@ uhtml::generate_html(usocket_t conn)
             //execute service function
             if(1==i.second->get_schema()[url].count("function"))
             {
+                
                 auto fname=i.second->get_schema()[url]["function"].get<std::string>();
-                if (1==services.count(fname))
-                {                    
-                    i.second->call_function(fname.c_str(),conn,this->post.str().c_str());
-                }
+                std::cout<<"hey"<<i.second->get_schema()[url]["function"].count(fname)<<"\n";
+                // if (1==i.second->get_schema()[url].count(fname.c_str()))
+                // {        
+                // if(i.second->)
+                    std::cout<<"yeah\n";            
+                    i.second->call_function(fname.c_str(),conn,this->post);
+                // }
             }
             //send file
             if(1==i.second->get_schema()[url].count("path"))
             {
-                send_file_from_json(this,conn, url);
+                // send_file_from_json(this,conn, url);
                 this->send_file(conn,i.second->get_schema()[url]["path"].get<std::string>().c_str());
 
             }
             return;
         };
     }
-    
+    //стандартный json набор
     if (json_obj.count(url) == 1) 
     {
         //отправляем статус (например 200 OK\n)
         this->send_code(conn, this->json_obj[url]["code"]);
 
         //execute service function
-        if(1==json_obj[url].count("function"))
-        {
-            // std::cout<<"я такая meta meta\n";
-            auto fname=json_obj[url]["function"].get<std::string>();
-            if (1==services.count(fname))
-            {
-                
-                // std::cout<<"я такая пост пост "<<this->post.str()<<std::endl;
-                
-                services[fname](this,conn,this->post.str().c_str());
-            }
-        }
+        // if(1==json_obj[url].count("function"))
+        // {
+        //     auto fname=json_obj[url]["function"].get<std::string>();
+        //     if (1==services.count(fname))
+        //     {
+        //         services[fname](this,conn,this->post.str().c_str());
+        //     }
+        // }
 
-
-        
-        
         //send file
         if(1==json_obj[url].count("path"))
         {
@@ -147,32 +146,32 @@ uhtml::generate_html(usocket_t conn)
 
 }
 
-void 
-uhtml::parse_post()
-{
-    if (this->post.str()=="terminate")
-    {
-        this->terminate_req=true;
-    }
-    else if (this->post.str()=="update_schema")
-    {
-        this->update_schema();
-    }
+// void 
+// uhtml::parse_post()
+// {
+//     if (this->post.str()=="terminate")
+//     {
+//         this->terminate_req=true;
+//     }
+//     else if (this->post.str()=="update_schema")
+//     {
+//         this->update_schema();
+//     }
  
-}
+// }
 
-void 
-uhtml::add_service(std::string& name,  uhtml::_serviceFunction func)
-{
-    services.insert(std::pair<const std::string, uhtml::_serviceFunction>(name,func));
-}
+// void 
+// uhtml::add_service(std::string& name,  uhtml::_serviceFunction func)
+// {
+//     services.insert(std::pair<const std::string, uhtml::_serviceFunction>(name,func));
+// }
 
-void 
-uhtml::add_service(const char* name,  uhtml::_serviceFunction func)
-{
-    std::string _name=name;
-    this->add_service(_name,  func);
-}
+// void 
+// uhtml::add_service(const char* name,  uhtml::_serviceFunction func)
+// {
+//     std::string _name=name;
+//     this->add_service(_name,  func);
+// }
 
 void 
 uhtml::add_service(const char* name,  uservice* svc)

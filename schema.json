@@ -45,15 +45,7 @@
             "content-type":"text/html"
         }
     },
-    "ctrl":
-    {
-        "path":"ctrlPage/serverCtrlPage.html",
-        "code":200,
-        "headers":
-        {
-            "content-type":"text/html"
-        }
-    },
+
     "cat-teapot-418.jpg":
     {
         "path":"content/cat-teapot-418.jpg",
@@ -62,11 +54,5 @@
         {
             "content-type":"image/jpeg"
         }
-    },
-    "_sys_":
-    {
-        "function":"_sys_",
-        "code":200
     }
-
 }

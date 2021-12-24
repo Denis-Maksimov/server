@@ -1,0 +1,17 @@
+{
+    "ctrl":
+    {
+        "path":"ctrlPage/serverCtrlPage.html",
+        "code":200,
+        "headers":
+        {
+            "content-type":"text/html"
+        }
+    },
+    "_sys_":
+    {
+        "function":"_sys_",
+        "code":200
+    }
+
+}

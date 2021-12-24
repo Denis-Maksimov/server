@@ -20,32 +20,31 @@ int main(int argc, char const *argv[])
         }
     #endif
     
-    uhtml srv(8081);
+    uhtml server(8081);
     
-    srv.add_service("_sys_", simple_serviceFunction);
+    // srv.add_service("_sys_", simple_serviceFunction);
 
     //====================================
-    uservice srv2;
-    srv2.set_schema(R"({
-        "ctrl2":
-        {
-            "path":"ctrlPage/serverCtrlPage.html",
-            "code":200,
-            "function":"_sys_",
-            "headers":
-            {
-                "content-type":"text/html"
-            }
-        }
-    })"_json);
-    srv2.add_function("_sys_",[](userver::usocket_t conn, const char* post){
-        std::cout<<"this is SPARTA!!!\n";
-    });
-    srv.add_service("service_name",&srv2);
+    uservice* srv2=example(&server);
+    // srv2.set_schema(R"({
+    //     "ctrl":
+    //     {
+    //         "path":"ctrlPage/serverCtrlPage.html",
+    //         "code":200,
+    //         "function":"_sys_",
+    //         "headers":
+    //         {
+    //             "content-type":"text/html"
+    //         }
+    //     }
+    // })"_json);
+
+
+    server.add_service("service_name",srv2);
     //====================================
 
-    while (!srv.check());
-
+    while (!server.check());
+    delete srv2;
     std::cout<<"exiting\n";
     
     #if defined(_WIN32)
