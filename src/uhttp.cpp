@@ -1,5 +1,6 @@
 #include "uhttp.h"
 #include <fstream>
+#include <cstring>
 uhttp::uhttp(uint16_t port): userver(port)
 {
    

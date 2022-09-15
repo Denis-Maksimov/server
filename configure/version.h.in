@@ -1,0 +1,12 @@
+#ifndef  _VERSION_H_
+#define _VERSION_H_
+
+#define _VERSION_MAJOR ${${CMAKE_PROJECT_NAME}_VERSION_MAJOR}
+#define _VERSION_MINOR ${${CMAKE_PROJECT_NAME}_VERSION_MINOR}
+
+const char *g_version="${${CMAKE_PROJECT_NAME}_VERSION}";
+// const char *g_binary_path="@PROJECT_BINARY_DIR@";
+
+
+
+#endif // ! _VERSION_H_

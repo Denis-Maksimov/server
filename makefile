@@ -20,7 +20,7 @@ UNAME:= $(shell uname)
 ifeq ($(UNAME),MINGW64_NT-10.0-19042)
 LDFLAGS:=  -lwinmm -lws2_32
 endif
-CPPFLAGS+= -g 
+CPPFLAGS+= -g -std=c++20
 .PHONY: clean all
 all: test_srv test_cli
 

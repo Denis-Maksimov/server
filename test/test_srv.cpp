@@ -8,7 +8,10 @@
 
 int main(int argc, char const *argv[])
 {
+    
+    fflush(stdout);
     #if defined(_WIN32)
+    printf("Startup  \n");
         WSADATA wsaData;
         int iResult;
         // Initialize Winsock

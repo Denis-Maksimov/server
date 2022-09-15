@@ -15,8 +15,11 @@ userver::userver(uint16_t port,bool is_cli):is_cli(is_cli)
 
         // usockaddr addr={0};
         struct sockaddr_in server;
-        server.sin_addr.s_addr=inet_addr("0.0.0.0");
-        // server.sin_addr.s_addr=inet_addr("10.26.0.250");
+        #if defined(__linux__)
+        // server.sin_addr.s_addr=inet_addr("127.0.0.1");
+        #else
+        server.sin_addr.s_addr=inet_addr("10.26.0.250");
+        #endif
         server.sin_family=AF_INET;
         server.sin_port=htons(port);
 
@@ -283,7 +286,7 @@ userver::check()
             // std::cout<<largest_sock<<ls<<"LS!\n";
             largest_sock=std::max(largest_sock,ls);
 
-            // std::cout<<largest_sock<<"LS!\n";
+            std::cout<<largest_sock<<"LS!\n";
             if(this->terminate_req)return this->terminate_req;
 
             int ret = select( largest_sock + 1, &fd_in, &fd_out, &fd_err, &tv );
@@ -303,7 +306,7 @@ userver::check()
 
             }else{
 
-
+                std::cout<<"Hyyy!\n";
                 for (auto &conn : inputs)
                 {
                     // обнаружили событие
