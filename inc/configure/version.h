@@ -6,24 +6,31 @@
  ******************************************/
 
 #define _VERSION_MAJOR 0
-#define _VERSION_MINOR 0
+#define _VERSION_MINOR 1
 
 #define _CHECK_VERSION(a,b) ((_VERSION_MAJOR == (a)) &&  (_VERSION_MINOR >=(b)))
+#define _FOR_VERSION(a,b) ((_VERSION_MAJOR == (a)) &&  (_VERSION_MINOR ==(b)))
 
 #if _CHECK_VERSION(0,0)
 #ifndef _VERSION_0_0
+#define _VERSE_OK
 #define _VERSION_0_0
 #endif
-#elif _CHECK_VERSION(0,1)
+#endif
+
+#if _CHECK_VERSION(0,1)
 #ifndef _VERSION_0_1
+#define _VERSE_OK
 #define _VERSION_0_1
 #endif
-#else
+#endif
+
+#ifndef _VERSE_OK 
 #error "VERSION INVALID!!!"
 #endif
 
-#define VERSION_STR "0.0"
-// const char *g_version="0.0";
+#define VERSION_STR "0.1"
+// const char *g_version="0.1";
 
 
 
