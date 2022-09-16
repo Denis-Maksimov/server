@@ -1,4 +1,5 @@
-
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "ctrlPage/serverCtrlPage.h"
 
 
@@ -61,3 +62,4 @@ uservice* example(userver* server){
 
     return srv2;
 }
+#endif

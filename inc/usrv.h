@@ -1,5 +1,8 @@
 #ifndef USRV_H
 #define USRV_H
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
+
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -69,5 +72,5 @@ public:
     bool check(void);
 };
 
-
+#endif //version 0.0
 #endif

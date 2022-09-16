@@ -1,6 +1,8 @@
 // #include <nlohmann/json.hpp>
 #ifndef UHTML_H
 #define UHTML_H
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "json.hpp"
 #include "uhttp.h"
 #include "uservice.h"
@@ -32,4 +34,5 @@ public:
     //================================================
     void add_service(const char*,  uservice*);
 };
+#endif
 #endif // !UHTML_H

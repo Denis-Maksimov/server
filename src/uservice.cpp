@@ -1,3 +1,5 @@
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "uservice.h"
 
 uservice::uservice(/* args */)
@@ -65,3 +67,5 @@ uservice::set_schema(nlohmann::json Schema)
 {
     this->schema=Schema;
 }
+
+#endif //v.0.0

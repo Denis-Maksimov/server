@@ -1,9 +1,13 @@
 #ifndef  _PATH_H_
 #define _PATH_H_
 
+/******************************************
+ * @brief IT'S AUTOMATICAL GENERATED FILE!
+ *  DON'T change version.h file!!!
+ ******************************************/
 
 const char *g_source_path="@PROJECT_SOURCE_DIR@";
-const char *g_binary_path="@PROJECT_BINARY_DIR@";
+const char *g_binary_path="@CMAKE_RUNTIME_OUTPUT_DIRECTORY@";
 
 
 

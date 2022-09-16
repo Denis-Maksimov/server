@@ -1,3 +1,6 @@
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
+
 #include "uhttp.h"
 #include <fstream>
 #include <cstring>
@@ -145,3 +148,5 @@ uhttp::erase(usocket_t conn)
     std::cout <<"http\n";
     this->meta.erase(conn);
 }
+
+#endif //v.0.0

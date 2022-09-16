@@ -1,5 +1,7 @@
-
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "usrv.h"
+
 #if defined(__linux__)
 #include <csignal>
 #endif
@@ -411,3 +413,4 @@ userver::terminate()
 {
     terminate_req=true;
 }
+#endif //v.0.0

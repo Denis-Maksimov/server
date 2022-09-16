@@ -1,3 +1,5 @@
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "ucli.h"
 #include <fstream>
 
@@ -212,3 +214,5 @@ ucli::request(std::string url,std::stringstream& data, std::function<void(usocke
 
     this->request(url,data.str(),fu);
 }
+
+#endif //v0.0

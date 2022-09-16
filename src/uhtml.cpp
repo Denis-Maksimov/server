@@ -1,3 +1,5 @@
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "uhtml.h"
 #include <fstream>
 
@@ -220,3 +222,5 @@ uhtml::add_service(const char* name,  uservice* svc)
             f.close();
 
  }
+
+#endif //v 0.0

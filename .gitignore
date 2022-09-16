@@ -1,6 +1,2 @@
-*.o
-modbus
-rrr
-test_cli
-test_srv
 build/*
+inc/configure/*

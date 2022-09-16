@@ -1,5 +1,7 @@
 #ifndef UCLI
 #define UCLI
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "usrv.h"
 #include <regex>
 #include <unordered_map>
@@ -32,5 +34,5 @@ public:
 };
 
 
-
+#endif
 #endif /* UCLI */

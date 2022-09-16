@@ -1,5 +1,7 @@
 #ifndef U_HTTP_H
 #define U_HTTP_H
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include "usrv.h"
 #include <regex>
 #include <unordered_map>
@@ -28,5 +30,5 @@ public:
 };
 
 
-
+#endif //v 0.0
 #endif // U_HTTP_H

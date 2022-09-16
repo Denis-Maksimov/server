@@ -1,5 +1,7 @@
 #ifndef USERVICE
 #define USERVICE
+#include "configure/version.h"
+#ifdef  _VERSION_0_0
 #include <functional>
 #include "usrv.h"
 #include "json.hpp"
@@ -26,5 +28,5 @@ public:
     nlohmann::json& get_schema();
 };
 
-
+#endif //v.0.0
 #endif /* USERVICE */
