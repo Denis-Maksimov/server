@@ -59,7 +59,10 @@ std::unordered_map<
     ...
 
 ```
+#### карта наследования классов
+usrv.h:userver -> uhttp.h:uhttp -> uhtml.h:uhtml 
 
+usrv.h:userver -> ucli.h:ucli
 ## Поддерживаемые платформы
 
     __linux__       Defined on Linux                            [x]

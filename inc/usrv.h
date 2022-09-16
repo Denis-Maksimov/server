@@ -204,10 +204,18 @@ public:
     connection(usrvNS::usocket_t s,rwe_type t=both);
     // connection(std::initializer_list<int>) = delete;
     connection(connection &&);
-    connection(const connection &) = delete;
+    connection(const connection &);
     connection& operator=(connection &&);
     connection& operator=(usrvNS::usocket_t);
     connection& operator=(const connection &) = delete;
+
+    //write
+    const connection& operator<<(const char* b);
+
+    //read
+    std::stringstream operator>>(connection&);
+
+    // operator<<
     usrvNS::usocket_t operator *();
     usrvNS::usocket_t operator *() const;
     // usrvNS::usocket_t operator *(const connection &);
@@ -218,8 +226,40 @@ private:
     rwe_type type;
     std::unique_ptr<usrvNS::usocket_t> socket_ptr;
     // usrvNS::usocket_t sock;
-    std::stringstream data;
+    std::stringstream data;//???unused???
 };
+#include <iterator>
+
+std::ostream& operator<<(std::ostream& os, const connection& c)
+{
+    // Use an ostream_iterator to handle output of the vector
+    // using iterators.
+    char buf[1024];
+    ssize_t n=recv(*c,buf,1024,0);
+    
+    if(n>0)
+    {
+        buf[n]='\0';
+        std::copy(&buf[0], &buf[n], std::ostream_iterator<char>(os, ""));
+    }
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, connection& c)
+{
+    // load the data using the assign function, which
+    // clears any data already in the vector, and copies 
+    // in the data from the specified iterator range.
+    // Here I use istream_iterators, which will read to the end
+    // of the stream.  If you dont want to do this, then you could 
+    // read what you want into a std::string first and assign that.
+    std::stringstream tmp;
+    is >> tmp;
+    send(*c,tmp.str().c_str(),tmp.str().length() ,0);
+    // tmp.c_str();
+
+    return is;
+}
 
 class userver
 {
@@ -246,7 +286,7 @@ protected:
     void accept_handle(const connection&);//+TODO
     void read_handle(const connection&);//TODO
     void write_handle(const connection&);//TODO
-    virtual void data_handle(usrvNS::usocket_t);//TODO
+    virtual void data_handle(const connection&);//TODO
     virtual void erase(usrvNS::usocket_t);//TODO
     bool terminate_req=false;
     bool is_cli;

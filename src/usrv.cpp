@@ -705,6 +705,7 @@ userver::read_handle(const connection& conn)
 
             buf[n]='\0';
             this->messages[*conn]<<buf;
+            // conn<<buf;
 
             std::cout <<"msg:"<<n<<"\n" <<this->messages[*conn].str()<<std::endl;
         
@@ -911,6 +912,16 @@ connection::operator=(usrvNS::usocket_t s)
     this->type=both;
     *socket_ptr=0;
 }
+
+// //write
+// const connection& 
+// connection::operator<<(const char* b)
+// {}
+
+// //read
+// std::stringstream 
+// connection::operator>>(connection&)
+// {}
 
 void 
 connection::set_type(rwe_type t)
