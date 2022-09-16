@@ -45,7 +45,7 @@ uservice::add_function(const char* name,  callback_t func)
     functions.insert(std::pair<const std::string, callback_t>(name,func));
 }
 void 
-uservice::call_function(const char* name, userver::usocket_t conn, std::stringstream& POST_data)
+uservice::call_function(const char* name, usrvNS::usocket_t conn, std::stringstream& POST_data)
 {
     if (1==functions.count(name))
     {

@@ -32,12 +32,15 @@
 #endif
 
 #if _FOR_VERSION(0,0)
+namespace usrvNS
+{
 #if defined(_WIN32)
 typedef SOCKET usocket_t;
 #else
 typedef int usocket_t;
 #define INVALID_SOCKET -1
 #endif
+}
 #endif
 
 #ifdef  _VERSION_0_1
@@ -100,19 +103,19 @@ protected:
         
     }usockaddr;
     
-    usocket_t srv_sock =INVALID_SOCKET;
+    usrvNS::usocket_t srv_sock =INVALID_SOCKET;
 
-    std::set<usocket_t> inputs;
-    std::set<usocket_t> outputs;
-    std::unordered_map<usocket_t,std::stringstream> messages;
+    std::set<usrvNS::usocket_t> inputs;
+    std::set<usrvNS::usocket_t> outputs;
+    std::unordered_map<usrvNS::usocket_t,std::stringstream> messages;
 
     struct timeval timeout={.tv_sec=1,.tv_usec=0};
 
-    void accept_handle(usocket_t);
-    void read_handle(usocket_t);
-    void write_handle(usocket_t);
-    virtual void data_handle(usocket_t);
-    virtual void erase(usocket_t);
+    void accept_handle(usrvNS::usocket_t);
+    void read_handle(usrvNS::usocket_t);
+    void write_handle(usrvNS::usocket_t);
+    virtual void data_handle(usrvNS::usocket_t);
+    virtual void erase(usrvNS::usocket_t);
     bool terminate_req=false;
     bool is_cli;
 public:
@@ -126,6 +129,97 @@ public:
 #if _FOR_VERSION(0,1)
 #include "common/except.hpp"
 // #error не готово ещё
+
+class wsa2_lib
+{
+private:
+    wsa2_lib()
+    {
+    #if defined(_WIN32)
+        printf("Startup  \n");
+        WSADATA wsaData;
+        int iResult;
+        // Initialize Winsock
+        iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+        if (iResult != 0) 
+        {
+            printf("WSAStartup failed: %d\n", iResult);
+            std::terminate();
+        }
+    #endif
+    }
+    wsa2_lib(std::initializer_list<int>) = delete;
+    wsa2_lib(wsa2_lib &&) = delete;
+    wsa2_lib(const wsa2_lib &) = delete;
+    wsa2_lib &operator=(wsa2_lib &&) = delete;
+    wsa2_lib &operator=(const wsa2_lib &) = delete;
+    ~wsa2_lib()
+    {
+    #if defined(_WIN32)
+        WSACleanup();
+    #endif
+    };
+public:
+    static wsa2_lib& 
+    instance(void)
+    {
+        static wsa2_lib obj;
+        return obj;
+    }
+
+    static void
+    get_last_err()
+    {
+        #if defined(_WIN32)
+        int err;
+        CHAR msgbuf[256]; // for a message up to 255 bytes.
+        msgbuf[0] = '\0'; // Microsoft doesn't guarantee this on man page.
+        err = WSAGetLastError();
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, // flags
+                      NULL,                                                       // lpsource
+                      err,                                                        // message id
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),                  // languageid
+                      msgbuf,                                                     // output buffer
+                      sizeof(msgbuf),                                             // size of msgbuf, bytes
+                      NULL);                                                      // va_list of arguments
+
+        std::cout<<"err"<<err<<"::"<< msgbuf<<std::endl;
+        #endif
+    }
+};
+
+
+
+class connection
+{
+public:
+    enum rwe_type
+    {
+        none,
+        read=SD_RECEIVE,
+        write=SD_SEND,
+        both=SD_BOTH
+    };
+    connection(rwe_type t=both);//TODO
+    connection(usrvNS::usocket_t s,rwe_type t=both);
+    // connection(std::initializer_list<int>) = delete;
+    connection(connection &&);
+    connection(const connection &) = delete;
+    connection& operator=(connection &&);
+    connection& operator=(usrvNS::usocket_t);
+    connection& operator=(const connection &) = delete;
+    usrvNS::usocket_t operator *();
+    usrvNS::usocket_t operator *() const;
+    // usrvNS::usocket_t operator *(const connection &);
+    ~connection() = default;
+    void set_type(rwe_type t);
+private:
+    /*data*/
+    rwe_type type;
+    std::unique_ptr<usrvNS::usocket_t> socket_ptr;
+    // usrvNS::usocket_t sock;
+    std::stringstream data;
+};
 
 class userver
 {
@@ -141,16 +235,17 @@ protected:
     }usockaddr;
     
     // usrvNS::usocket_t srv_sock =INVALID_SOCKET;
-    socketUniquePtr srv_sock;
-    std::set<socketUniquePtr> inputs;
-    std::set<socketUniquePtr> outputs;
+    connection srv_end_point;
+    // socketUniquePtr srv_sock;
+    std::set<connection> inputs;
+    std::set<connection> outputs;
     std::unordered_map<usrvNS::usocket_t,std::stringstream> messages;
 
     struct timeval timeout={.tv_sec=1,.tv_usec=0};
 
-    void accept_handle(usrvNS::usocket_t);//+TODO
-    void read_handle(usrvNS::usocket_t);//TODO
-    void write_handle(usrvNS::usocket_t);//TODO
+    void accept_handle(const connection&);//+TODO
+    void read_handle(const connection&);//TODO
+    void write_handle(const connection&);//TODO
     virtual void data_handle(usrvNS::usocket_t);//TODO
     virtual void erase(usrvNS::usocket_t);//TODO
     bool terminate_req=false;
@@ -164,9 +259,8 @@ private:
     void bind_address_(const char* addr,uint16_t port);
 };
 
-#endif
 
 
-
+#endif //version 0.1
 #endif //version 0.0
 #endif

@@ -36,7 +36,7 @@ uhtml::~uhtml()
 }
 
 void 
-send_file_from_json(uhtml* h,uhtml::usocket_t conn, std::string& host)
+send_file_from_json(uhtml* h, usrvNS::usocket_t conn, std::string& host)
 {
         // TODO: здесь должна быть проверка входных данных
         // //отправляем статус (например 200 OK\n)
@@ -77,14 +77,14 @@ send_file_from_json(uhtml* h,uhtml::usocket_t conn, std::string& host)
 }
 
 void 
-send_file_from_json(uhtml* h,uhtml::usocket_t conn, const char* host)
+send_file_from_json(uhtml* h,usrvNS::usocket_t conn, const char* host)
 {
     std::string _host=host;
     send_file_from_json(h, conn, _host);
 }
 
 void 
-uhtml::generate_html(usocket_t conn)
+uhtml::generate_html(usrvNS::usocket_t conn)
 {
 
     // if parsed_url in self.file_pages:
@@ -186,7 +186,7 @@ uhtml::add_service(const char* name,  uservice* svc)
 
 
  void 
- uhtml::send_file(usocket_t conn, const char* file)
+ uhtml::send_file(usrvNS::usocket_t conn, const char* file)
  {
    
             //ищем в schema.json путь к файлу

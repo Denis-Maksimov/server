@@ -9,19 +9,19 @@
 
 class uhtml: public uhttp
 {
-    friend void send_file_from_json(uhtml* h,usocket_t conn, std::string& host);
-    friend void send_file_from_json(uhtml* h,usocket_t conn, const char* host);
+    friend void send_file_from_json(uhtml* h,usrvNS::usocket_t conn, std::string& host);
+    friend void send_file_from_json(uhtml* h,usrvNS::usocket_t conn, const char* host);
 private:
-    void send_file(usocket_t conn, const char* file);
+    void send_file(usrvNS::usocket_t conn, const char* file);
     nlohmann::json json_obj; //schema.json
     protected:
-    void generate_html(usocket_t conn) override;
+    void generate_html(usrvNS::usocket_t conn) override;
     // void parse_post();
     
 public:
     void update_schema(const char* path);
     void update_schema();
-    typedef void(*_serviceFunction)(uhtml* h,usocket_t conn, const char* POST_data_parsed_to_JSON);
+    typedef void(*_serviceFunction)(uhtml* h,usrvNS::usocket_t conn, const char* POST_data_parsed_to_JSON);
     uhtml(uint16_t port);
     ~uhtml();
 private:

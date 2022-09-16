@@ -4,7 +4,7 @@
 
 
 
-void simple_serviceFunction(uhtml* h, uhtml::usocket_t conn, const char* POST_JSON)
+void simple_serviceFunction(uhtml* h, usrvNS::usocket_t conn, const char* POST_JSON)
 {
     nlohmann::json parsed=nlohmann::json::parse(POST_JSON);
     
@@ -33,7 +33,7 @@ void simple_serviceFunction(uhtml* h, uhtml::usocket_t conn, const char* POST_JS
 uservice* example(userver* server){
     uservice* srv2=new uservice;
     srv2->update_schema("./ctrlPage/schema.json");
-    srv2->add_function("_sys_",(void*)server,[](userver::usocket_t conn, std::stringstream& post,void*data)
+    srv2->add_function("_sys_",(void*)server,[](usrvNS::usocket_t conn, std::stringstream& post,void*data)
     {
             nlohmann::json parsed=nlohmann::json::parse(post.str());
             std::cout<<"sda"<<parsed.dump()<<std::endl;

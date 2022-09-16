@@ -4,7 +4,7 @@
 #ifdef  _VERSION_0_0
 #include "uhtml.h"
 
-void simple_serviceFunction(uhtml* h, uhtml::usocket_t conn, const char* POST_JSON);
+void simple_serviceFunction(uhtml* h, usrvNS::usocket_t conn, const char* POST_JSON);
 
 
 uservice* example(userver* server);

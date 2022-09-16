@@ -22,7 +22,7 @@ uhttp::~uhttp()
 
 
 void 
-uhttp::generate_html(usocket_t conn)
+uhttp::generate_html(usrvNS::usocket_t conn)
 {
     this->send_code(conn,200);
     std::string content="since I'm a teapot so I cannot brew coffee.. So sorry((\n";
@@ -37,7 +37,7 @@ uhttp::generate_html(usocket_t conn)
 
 
 void
-uhttp::send_code(usocket_t conn,size_t code)
+uhttp::send_code(usrvNS::usocket_t conn,size_t code)
 {
     if(this->codes.find(code)==this->codes.cend())
     {
@@ -53,7 +53,7 @@ uhttp::send_code(usocket_t conn,size_t code)
 
 
 void
-uhttp::data_handle(usocket_t conn)
+uhttp::data_handle(usrvNS::usocket_t conn)
 {
     char line[1024]={0};
 
@@ -143,7 +143,7 @@ uhttp::data_handle(usocket_t conn)
 
 
 void
-uhttp::erase(usocket_t conn)
+uhttp::erase(usrvNS::usocket_t conn)
 {
     std::cout <<"http\n";
     this->meta.erase(conn);

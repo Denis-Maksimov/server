@@ -68,11 +68,11 @@ userver::~userver()
 
 //=========================================================================
 void
-userver::accept_handle(usocket_t conn)
+userver::accept_handle(usrvNS::usocket_t conn)
 {
     usockaddr client_addr;
     socklen_t len;
-    usocket_t new_conn = accept(conn, &client_addr.sa, &len);
+    usrvNS::usocket_t new_conn = accept(conn, &client_addr.sa, &len);
     if (new_conn==-1)
     {
         #if defined(_WIN32)
@@ -107,7 +107,7 @@ userver::accept_handle(usocket_t conn)
 //=========================================================================
 
 void
-userver::read_handle(usocket_t conn)
+userver::read_handle(usrvNS::usocket_t conn)
 {
         char buf[1024];
         ssize_t n=recv(conn,buf,1024,0);
@@ -177,7 +177,7 @@ userver::read_handle(usocket_t conn)
 //=========================================================================
 
 void
-userver::write_handle(usocket_t conn)
+userver::write_handle(usrvNS::usocket_t conn)
 {
   std::stringstream msg;
 // def write_handle(self,conn):
@@ -215,7 +215,7 @@ if(this->messages.find(conn)!=this->messages.cend())
 }   
 //=========================================================================
 void
-userver::data_handle(usocket_t conn)
+userver::data_handle(usrvNS::usocket_t conn)
 {
 
         send(conn,"HTTP/1.1 200 OK\r\n",17, 0);
@@ -253,8 +253,8 @@ userver::check()
         struct timeval tv;
 
         fd_set fd_in,fd_out,fd_err;
-        std::set<userver::usocket_t>::iterator it;
-        usocket_t largest_sock,ls;
+        std::set<usrvNS::usocket_t>::iterator it;
+        usrvNS::usocket_t largest_sock,ls;
         while(1){  
             FD_ZERO( &fd_in );
             FD_ZERO( &fd_out );
@@ -404,7 +404,7 @@ userver::check()
 
 
 void
-userver::erase(usocket_t s)
+userver::erase(usrvNS::usocket_t s)
 {
     
 }
@@ -433,9 +433,9 @@ userver::bind_address_(const char* a,uint16_t port)
     server.sin_family=AF_INET;
     server.sin_port=htons(port);
 
-    std::cout<<(*this->srv_sock)<<"serv!\n";
+    std::cout<<(*srv_end_point)<<"serv!\n";
 
-    while(auto rv=bind(*this->srv_sock, (struct sockaddr *)&server, sizeof(server)))
+    while(auto rv=bind(*srv_end_point, (struct sockaddr *)&server, sizeof(server)))
     {
         std::cout<<rv;
         port+=1;
@@ -449,6 +449,9 @@ userver::
 userver(uint16_t port,bool is_cli)
 {
         //--------------------------------------
+        //-- загрузка библиотеки wsa2 для вэнди
+        wsa2_lib::instance();
+        //--------------------------------------
         //-- заглушка на SIGPIPE сигнал
         #if defined(__linux__)
             std::signal(SIGPIPE, [](int){});
@@ -456,9 +459,11 @@ userver(uint16_t port,bool is_cli)
 
         //--------------------------------------
         //-- create socket
-        this->srv_sock=socketUniquePtr(new usrvNS::usocket_t);
-        *this->srv_sock=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);//IPPROTO_TCP
-        if(INVALID_SOCKET==(*this->srv_sock))
+        // this->srv_sock=socketUniquePtr(new usrvNS::usocket_t);
+        auto _sock=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);//IPPROTO_TCP
+        this->srv_end_point=_sock;
+
+        if(INVALID_SOCKET==(*srv_end_point))
         {
             // this->srv_sock.reset();
             throw common::m_exception(__LINE__+"::INVALID_SOCKET");
@@ -477,8 +482,8 @@ userver(uint16_t port,bool is_cli)
         this->inputs.clear();
         if(!is_cli)
         {
-            listen(*this->srv_sock,3);//TODO __n=3 
-            this->inputs.insert(std::move(this->srv_sock));//сокеты, которые будем читать
+            listen(*srv_end_point,3);//TODO __n=3 
+            this->inputs.insert(std::move(srv_end_point));//сокеты, которые будем читать
         }
         this->outputs.clear();// сокеты, в которые надо писать
         this->messages.clear();
@@ -523,13 +528,13 @@ userver::check()
             FD_ZERO( &fd_out );
             FD_ZERO( &fd_err );
 
-            for (auto &i : inputs)
+            for (auto& i : inputs)
             {
-                FD_SET(*i, &fd_in );//добавляем в сет
-                FD_SET(*i, &fd_err );//добавляем в сет
+                FD_SET((*i), &fd_in );//добавляем в сет
+                FD_SET((*i), &fd_err );//добавляем в сет
             }
 
-            for (auto &i : outputs)
+            for (auto& i : outputs)
             {
                 FD_SET(*i, &fd_out );//добавляем в сет
             }
@@ -572,24 +577,23 @@ userver::check()
             }else{
 
                 // std::cout<<"Hyyy!\n";
-                for (auto& conn : inputs)
+                for (const connection& conn : inputs)
                 {
                     // обнаружили событие
                     if ( FD_ISSET( *conn, &fd_in ) )
                     {
-                        if((conn==this->srv_sock)&&(!this->is_cli))
+                        if((*conn==(*srv_end_point))&&(!this->is_cli))
                         {
                             std::cout<<"accept!\n";
                             //  если это серверный сокет, то пришел новый
                             //  клиент, принимаем подключение               
-                            this->accept_handle( *conn);
+                            this->accept_handle(conn);
                             break;
                         }else{
                             std::cout<<"read!\n";
-                            this->read_handle( *conn);
+                            this->read_handle( conn);
                             //  если это НЕ серверный сокет, то 
                             //  клиент хочет что-то сказать
-                            // self.read_handle(conn)
                             break;
                         }
               
@@ -597,19 +601,18 @@ userver::check()
                     
                 }
                 
-
                 // # список SEND - сокеты, готовые принять сообщение
                 for (auto &conn : outputs)
                 {
                     // обнаружили событие
                     if ( FD_ISSET( *conn, &fd_in ) )
                     {
-                        std::cout<<"write!\n";
-                        this->write_handle(*conn);
-                        break;
                         //  # выбираем из словаря сообщения
                         // # для данного сокета
-                        // self.write_handle(conn) 
+                        std::cout<<"write!\n";
+                        this->write_handle(conn);
+                        break;
+                        
                     }
                     
                 }
@@ -649,47 +652,29 @@ userver::check()
                     }
                     
                 }
-
-
                 //end events
             }
-
             //end cycle
             printf("end cycle\n");
-
         }
         //finalize
     }catch(const std::exception& e){
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
         return true;
     }
     return this->terminate_req;
-
 }
+
 void
-userver::accept_handle(usrvNS::usocket_t conn)
+userver::accept_handle(const connection& conn)
 {
     usockaddr client_addr;
     socklen_t len;
-    auto new_conn=socketUniquePtr(new usrvNS::usocket_t);
-    *new_conn = accept(conn, &client_addr.sa, &len);
-    if (*new_conn==-1)
+    // auto new_conn=socketUniquePtr(new usrvNS::usocket_t);
+    connection new_conn = accept(*conn, &client_addr.sa, &len);
+    if (*new_conn==INVALID_SOCKET)
     {
-        #if defined(_WIN32)
-        int err;
-        CHAR msgbuf[256]; // for a message up to 255 bytes.
-        msgbuf[0] = '\0'; // Microsoft doesn't guarantee this on man page.
-        err = WSAGetLastError();
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, // flags
-                      NULL,                                                       // lpsource
-                      err,                                                        // message id
-                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),                  // languageid
-                      msgbuf,                                                     // output buffer
-                      sizeof(msgbuf),                                             // size of msgbuf, bytes
-                      NULL);                                                      // va_list of arguments
-
-        std::cout<<"err"<<err<<"::"<< msgbuf<<std::endl;
-        #endif
+        wsa2_lib::get_last_err();
     }
     
         // # если это серверный сокет, то пришел новый
@@ -707,10 +692,10 @@ userver::accept_handle(usrvNS::usocket_t conn)
 //=========================================================================
 
 void
-userver::read_handle(usrvNS::usocket_t conn)
+userver::read_handle(const connection& conn)
 {
         char buf[1024];
-        ssize_t n=recv(conn,buf,1024,0);
+        ssize_t n=recv(*conn,buf,1024,0);
 
 //      # если сокет прочитался и есть сообщение 
 //      # то кладем сообщение в словарь, где 
@@ -719,9 +704,9 @@ userver::read_handle(usrvNS::usocket_t conn)
         {
 
             buf[n]='\0';
-            this->messages[conn]<<buf;
+            this->messages[*conn]<<buf;
 
-            std::cout <<"msg:"<<n<<"\n" <<this->messages[conn].str()<<std::endl;
+            std::cout <<"msg:"<<n<<"\n" <<this->messages[*conn].str()<<std::endl;
         
         
 
@@ -731,13 +716,17 @@ userver::read_handle(usrvNS::usocket_t conn)
             {               
                 // if(this->outputs.find(conn)==this->outputs.cend())
                 // {
-                    this->outputs.insert(socketUniquePtr(new usrvNS::usocket_t(conn)));
+                    auto conn_b = conn;
+                    this->outputs.insert(std::move(conn_b));
     //             if conn not in self.outputs:
     //                 self.outputs.append(conn)
                 // }
             }
 
-        makeSocketSharedPtr(&conn);
+        // makeSocketSharedPtr(&conn);
+
+//      # если сокет прочитался и сообщения нет
+//      # значит сообщение можно обрабатывать
         }else if(n==0)
         {
             this->data_handle(conn);
@@ -759,15 +748,15 @@ userver::read_handle(usrvNS::usocket_t conn)
 //             # закрываем сокет как положено, тем 
 //             # самым очищаем используемые ресурсы
 //             conn.close()
-            shutdown(conn,SHUT_RDWR);
+            // shutdown(conn,SHUT_RDWR);
 
 
 //             # удаляем сообщения для данного сокета
-            if(this->messages.find(conn)!=this->messages.cend())
+            if(this->messages.find(*conn)!=this->messages.cend())
             {
-                this->messages.erase(conn);
+                this->messages.erase(*conn);
             }
-            erase(conn);
+            // erase(conn);
 
 
 
@@ -777,13 +766,13 @@ userver::read_handle(usrvNS::usocket_t conn)
 //=========================================================================
 
 void
-userver::write_handle(usocket_t conn)
+userver::write_handle(const connection& conn)
 {
   std::stringstream msg;
 // def write_handle(self,conn):
-if(this->messages.find(conn)!=this->messages.cend())
+if(this->messages.find(*conn)!=this->messages.cend())
 {
-   this->messages[conn].copyfmt(msg);
+   this->messages[*conn].copyfmt(msg);
 //     msg = self.messages.get(conn, None)
 
     msg.seekg(0, std::ios::end);
@@ -815,11 +804,11 @@ if(this->messages.find(conn)!=this->messages.cend())
 }   
 //=========================================================================
 void
-userver::data_handle(usocket_t conn)
+userver::data_handle(const connection& conn)
 {
 
-        send(conn,"HTTP/1.1 200 OK\r\n",17, 0);
-        send(conn,"\r\nBeee",6,0);
+        send(*conn,"HTTP/1.1 200 OK\r\n",17, 0);
+        send(*conn,"\r\nBeee",6,0);
 
        
         if(this->inputs.find(conn)!=this->inputs.cend())
@@ -833,13 +822,100 @@ userver::data_handle(usocket_t conn)
             this->outputs.erase(conn);
             // std::cout<<"two\n";
         }
-        erase(conn);
+        // erase(conn);
 
         // std::cout<<"four\n";
 
 }
 
-
 #endif //_FOR_VERSION(0,1)
 
-#endif //v.0.0
+#ifdef _VERSION_0_1
+
+connection::connection(rwe_type t)
+:type(t)
+{
+    socket_ptr=
+    std::make_unique <usrvNS::usocket_t>(new usrvNS::usocket_t(0));
+}
+connection::connection(usrvNS::usocket_t s, rwe_type t)
+:type(t)
+{
+    socket_ptr=
+        std::make_unique <usrvNS::usocket_t>(new usrvNS::usocket_t(s));
+
+}
+// connection::connection(std::initializer_list<int>) = delete;
+connection::connection(connection && other)
+{
+    shutdown(*socket_ptr,type);
+    socket_ptr.reset();
+    type=other.type;
+    socket_ptr=std::move(other.socket_ptr);
+    other.socket_ptr.reset();
+}
+
+connection::connection(const connection & other)
+{
+    // socket_ptr.reset();
+    *socket_ptr=*other.socket_ptr;
+}
+
+connection&
+connection::operator=(connection&& other)
+{
+    if(this==&other)
+    {
+        return *this;
+    }
+    if(*socket_ptr!=(*other.socket_ptr))
+    {
+        shutdown(*socket_ptr,type);
+        socket_ptr.reset();
+
+        socket_ptr=std::move(other.socket_ptr);
+        type=other.type;
+        // other.socket_ptr.reset();
+        other.type=both;
+        data=std::move(other.data);
+    }
+    return *this;
+}
+
+usrvNS::usocket_t 
+connection::operator*()
+{
+    return *(this->socket_ptr);
+}
+
+usrvNS::usocket_t 
+connection::operator*() const
+{
+    return *(this->socket_ptr);
+}
+// connection& 
+// connection::operator=(const connection& other)
+// {
+//     return *this;
+// }
+
+connection::~connection()
+{
+     shutdown(*socket_ptr,type);
+}
+
+
+connection& 
+connection::operator=(usrvNS::usocket_t s)
+{
+    this->type=both;
+    *socket_ptr=0;
+}
+
+void 
+connection::set_type(rwe_type t)
+{
+    this->type=t;
+}
+#endif // _VERSION_0_1
+#endif // _VERSION_0_0

@@ -23,7 +23,7 @@ ucli::~ucli()
 
 
 void 
-ucli::handle_html(usocket_t conn)
+ucli::handle_html(usrvNS::usocket_t conn)
 {
 
     std::cout <<"since I'm a teapot so I cannot brew coffee.. So sorry((\n";
@@ -34,7 +34,7 @@ ucli::handle_html(usocket_t conn)
 
 
 void
-ucli::send_code(usocket_t conn,size_t code)
+ucli::send_code(usrvNS::usocket_t conn,size_t code)
 {
     if(this->codes.find(code)==this->codes.cend())
     {
@@ -50,7 +50,7 @@ ucli::send_code(usocket_t conn,size_t code)
 
 
 void
-ucli::data_handle(usocket_t conn)
+ucli::data_handle(usrvNS::usocket_t conn)
 {
     char line[1024]={0};
 
@@ -140,7 +140,7 @@ ucli::data_handle(usocket_t conn)
 
 
 void
-ucli::erase(usocket_t conn)
+ucli::erase(usrvNS::usocket_t conn)
 {
     std::cout <<"http\n";
     this->meta.erase(conn);
@@ -164,7 +164,7 @@ ucli::send_GET(std::string url,uint16_t port)
 
 #include <iostream>
 void 
-ucli::request(std::string url,std::string data, std::function<void(usocket_t)> f)
+ucli::request(std::string url,std::string data, std::function<void(usrvNS::usocket_t)> f)
 {
     std::regex uri;
     std::smatch groups;
@@ -209,7 +209,7 @@ ucli::request(std::string url,std::string data, std::function<void(usocket_t)> f
 
 
 void 
-ucli::request(std::string url,std::stringstream& data, std::function<void(usocket_t)> fu)
+ucli::request(std::string url,std::stringstream& data, std::function<void(usrvNS::usocket_t)> fu)
 {
 
     this->request(url,data.str(),fu);
