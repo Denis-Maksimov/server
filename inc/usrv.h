@@ -53,6 +53,7 @@ typedef int usocket_t;
 #include <memory>
 namespace usrvNS
 {
+    const size_t TCP_maxlen=65535;
     #if defined(_WIN32)
     typedef SOCKET usocket_t;
     #else
@@ -190,9 +191,12 @@ public:
 
 
 
+
 class connection
 {
 public:
+
+    #if defined(_WIN32)
     enum rwe_type
     {
         none,
@@ -200,6 +204,16 @@ public:
         write=SD_SEND,
         both=SD_BOTH
     };
+    #else
+    enum rwe_type
+    {
+        none,
+        read=SHUT_RD,
+        write=SHUT_WR,
+        both=SHUT_RDWR
+    };
+     #endif
+
     connection(rwe_type t=both);//TODO
     connection(usrvNS::usocket_t s,rwe_type t=both);
     // connection(std::initializer_list<int>) = delete;
@@ -209,6 +223,7 @@ public:
     connection& operator=(usrvNS::usocket_t);
     connection& operator=(const connection &) = delete;
 
+    bool operator<(const connection&);
     //write
     const connection& operator<<(const char* b);
 
@@ -216,10 +231,11 @@ public:
     std::stringstream operator>>(connection&);
 
     // operator<<
-    usrvNS::usocket_t operator *();
+    usrvNS::usocket_t& operator *();
+    // usrvNS::usocket_t operator *();
     usrvNS::usocket_t operator *() const;
     // usrvNS::usocket_t operator *(const connection &);
-    ~connection() = default;
+    ~connection();
     void set_type(rwe_type t);
 private:
     /*data*/
@@ -229,38 +245,11 @@ private:
     std::stringstream data;//???unused???
 };
 #include <iterator>
-
-std::ostream& operator<<(std::ostream& os, const connection& c)
-{
-    // Use an ostream_iterator to handle output of the vector
-    // using iterators.
-    char buf[1024];
-    ssize_t n=recv(*c,buf,1024,0);
-    
-    if(n>0)
-    {
-        buf[n]='\0';
-        std::copy(&buf[0], &buf[n], std::ostream_iterator<char>(os, ""));
-    }
-    return os;
-}
-
-std::istream& operator>>(std::istream& is, connection& c)
-{
-    // load the data using the assign function, which
-    // clears any data already in the vector, and copies 
-    // in the data from the specified iterator range.
-    // Here I use istream_iterators, which will read to the end
-    // of the stream.  If you dont want to do this, then you could 
-    // read what you want into a std::string first and assign that.
-    std::stringstream tmp;
-    is >> tmp;
-    send(*c,tmp.str().c_str(),tmp.str().length() ,0);
-    // tmp.c_str();
-
-    return is;
-}
-
+std::ostream& operator<<(std::ostream& os, const connection& c);
+std::istream& operator>>(std::istream& is, const connection& c);
+std::istream& operator>>(const char* is, const connection& c);
+// std::istream& operator>>(const char is[], const connection& c);
+bool operator<(const connection&,const connection&);
 class userver
 {
  
@@ -287,7 +276,7 @@ protected:
     void read_handle(const connection&);//TODO
     void write_handle(const connection&);//TODO
     virtual void data_handle(const connection&);//TODO
-    virtual void erase(usrvNS::usocket_t);//TODO
+    virtual void erase(usrvNS::usocket_t)=delete;//TODO
     bool terminate_req=false;
     bool is_cli;
 public:

@@ -3,23 +3,26 @@
 #include "common/except.hpp"
 
 
-namespace common
-{
-
+// namespace common
+// {
+common::
 m_exception::m_exception(std::string s) _GLIBCXX_USE_NOEXCEPT
 {
-    this->str=s;
+    this->strn=s;
 }
 
 const char*
-m_exception::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
+common::m_exception::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
 {
-    return this->str.c_str();
+    return this->strn.c_str();
 }
 
+
+common::
+m_exception::~m_exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
+{
+    
 }
-
-
 
 
 

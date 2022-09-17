@@ -198,18 +198,20 @@ uhttp::send_code(const connection& conn,size_t code)
     {
         code=418;
     }
-    conn<<std::stringstream("hello");
-    send(*conn,"HTTP/1.1 ",9,0);
+    "HTTP/1.1 ">>conn;
+    this->codes[code]>>conn;
+    "\r\n">>conn;
+    // send(*conn,"HTTP/1.1 ",9,0);
     std::cout<<this->codes[code].str();
-    send(*conn,this->codes[code].str().c_str(),this->codes[code].str().length(),0);
-    send(*conn,"\r\n",2,0);
+    // send(*conn,this->codes[code].str().c_str(),this->codes[code].str().length(),0);
+    // send(*conn,"\r\n",2,0);
 
     
 }
 
 
 void
-uhttp::data_handle(usrvNS::usocket_t conn)
+uhttp::data_handle(const connection& conn)
 {
     char line[1024]={0};
 
@@ -223,32 +225,33 @@ uhttp::data_handle(usrvNS::usocket_t conn)
         std::string a;
  
 
-        this->messages[conn].getline(line,1024);
+        this->messages[*conn].getline(line,1024);
 
         a=line;
 
-        if(std::strlen(line)<1){
+        if(std::strlen(line)<1)
+        {
             // this->send_code(conn,400);
             break;
         }
         
         std::regex_search(a, m, this->header);
-        this->meta[conn].insert(pair_s("Method",m[1]));
-        this->meta[conn].insert(pair_s("Host",  m[2]));
+        this->meta[*conn].insert(pair_s("Method",m[1]));
+        this->meta[*conn].insert(pair_s("Host",  m[2]));
         
 
         a="";
 
         // int c=0;
 
-        while (this->messages[conn].getline(line,1024))
+        while (this->messages[*conn].getline(line,1024))
         {
                 a=line;
                 // std::cout<<"чукча=" << a <<"\n";
 
                 if(std::regex_search(a, m, this->remeta))
                 {
-                    this->meta[conn].insert(pair_s(m[1].str(),m[2].str()));
+                    this->meta[*conn].insert(pair_s(m[1].str(),m[2].str()));
                     // meta[m[1].str()]=m[2].str();
                     std::cout << m[1]<<" <--> "<< m[2]<<"\n";
                 }else{
@@ -268,7 +271,7 @@ uhttp::data_handle(usrvNS::usocket_t conn)
         
         this->post.str("");
         this->post.clear();
-        this->post << this->messages[conn].rdbuf();
+        this->post << this->messages[*conn].rdbuf();
 
         // std::cout << this->post.str();
   
@@ -288,16 +291,18 @@ uhttp::data_handle(usrvNS::usocket_t conn)
     {
         this->outputs.erase(conn);
     }
-    if( this->meta[conn]["Connection"] != "keep-alive" ||
-        this->meta[conn]["Connection"] != "Keep-Alive" )
+    if( this->meta[*conn]["Connection"] != "keep-alive" ||
+        this->meta[*conn]["Connection"] != "Keep-Alive" )
     {
-        shutdown(conn,SHUT_RDWR);
+        //???
+        shutdown(*conn,SHUT_RDWR);
     }
-    this->meta.erase(conn);
+    this->meta.erase(*conn);
 
 }
 
 
+//??? what is it ???
 void
 uhttp::erase(usrvNS::usocket_t conn)
 {

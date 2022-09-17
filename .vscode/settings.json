@@ -68,6 +68,7 @@
         "concepts": "cpp",
         "numbers": "cpp",
         "*.in": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "strstream": "cpp"
     }
 }

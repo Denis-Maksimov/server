@@ -444,7 +444,7 @@ userver::bind_address_(const char* a,uint16_t port)
     }
     std::cout<<"port="<<htons(server.sin_port)<<std::endl;
 }
-
+#include <unistd.h>
 userver::
 userver(uint16_t port,bool is_cli)
 {
@@ -461,8 +461,9 @@ userver(uint16_t port,bool is_cli)
         //-- create socket
         // this->srv_sock=socketUniquePtr(new usrvNS::usocket_t);
         auto _sock=socket(AF_INET, SOCK_STREAM, IPPROTO_IP);//IPPROTO_TCP
-        this->srv_end_point=_sock;
-
+        *srv_end_point = _sock;
+        std::cout << _sock<<"s"<<(*srv_end_point)<<std::endl;
+        sleep(1);
         if(INVALID_SOCKET==(*srv_end_point))
         {
             // this->srv_sock.reset();
@@ -483,7 +484,7 @@ userver(uint16_t port,bool is_cli)
         if(!is_cli)
         {
             listen(*srv_end_point,3);//TODO __n=3 
-            this->inputs.insert(std::move(srv_end_point));//сокеты, которые будем читать
+            this->inputs.insert((srv_end_point));//сокеты, которые будем читать
         }
         this->outputs.clear();// сокеты, в которые надо писать
         this->messages.clear();
@@ -636,7 +637,7 @@ userver::check()
                         
                         // if conn in self.outputs:
                         //     self.outputs.remove(conn)
-
+                        
                         if(this->outputs.find(conn)!=this->outputs.cend())
                         {
                             this->outputs.erase(conn);
@@ -694,20 +695,21 @@ userver::accept_handle(const connection& conn)
 void
 userver::read_handle(const connection& conn)
 {
-        char buf[1024];
-        ssize_t n=recv(*conn,buf,1024,0);
-
+        // char buf[1024];
+        // ssize_t n=recv(*conn,buf,1024,0);
+        std::stringstream buf;
+        buf<<conn;
 //      # если сокет прочитался и есть сообщение 
 //      # то кладем сообщение в словарь, где 
 //      # ключом будет сокет клиента
-        if(n>0)
+        if(buf.str().length() >0)
         {
 
-            buf[n]='\0';
-            this->messages[*conn]<<buf;
+            // buf[n]='\0';
+            this->messages[*conn]<<buf.rdbuf();
             // conn<<buf;
 
-            std::cout <<"msg:"<<n<<"\n" <<this->messages[*conn].str()<<std::endl;
+            std::cout <<"msg:"<<buf.str().length()<<"\n" <<this->messages[*conn].str()<<std::endl;
         
         
 
@@ -728,12 +730,13 @@ userver::read_handle(const connection& conn)
 
 //      # если сокет прочитался и сообщения нет
 //      # значит сообщение можно обрабатывать
-        }else if(n==0)
+        }else if(buf.str().length()==0)
         {
             this->data_handle(conn);
 
         }else
         {
+            throw common::m_exception("Этого не может быть");
 //             # если сообщений нет, то клиент
 //             # закрыл соединение или отвалился 
 //             # удаляем его сокет из всех очередей
@@ -750,15 +753,12 @@ userver::read_handle(const connection& conn)
 //             # самым очищаем используемые ресурсы
 //             conn.close()
             // shutdown(conn,SHUT_RDWR);
-
-
 //             # удаляем сообщения для данного сокета
             if(this->messages.find(*conn)!=this->messages.cend())
             {
                 this->messages.erase(*conn);
             }
             // erase(conn);
-
 
 
         }
@@ -808,10 +808,13 @@ void
 userver::data_handle(const connection& conn)
 {
 
-        send(*conn,"HTTP/1.1 200 OK\r\n",17, 0);
-        send(*conn,"\r\nBeee",6,0);
+        // send(*conn,"HTTP/1.1 200 OK\r\n",17, 0);
+        // send(*conn,"\r\nBeee",6,0);
+        
+        "HTTP/1.1 200 OK\r\n">>conn;//>>std::cout.rdbuf();
+        "\r\n">>conn;//>>std::cout.rdbuf();
+        "Beee">>conn;//>>std::cout.rdbuf();
 
-       
         if(this->inputs.find(conn)!=this->inputs.cend())
         {
             this->inputs.erase(conn);
@@ -837,20 +840,20 @@ connection::connection(rwe_type t)
 :type(t)
 {
     socket_ptr=
-    std::make_unique <usrvNS::usocket_t>(new usrvNS::usocket_t(0));
+    std::make_unique <usrvNS::usocket_t>(0);
 }
 connection::connection(usrvNS::usocket_t s, rwe_type t)
 :type(t)
 {
     socket_ptr=
-        std::make_unique <usrvNS::usocket_t>(new usrvNS::usocket_t(s));
+        std::make_unique <usrvNS::usocket_t>(s);
 
 }
 // connection::connection(std::initializer_list<int>) = delete;
 connection::connection(connection && other)
 {
-    shutdown(*socket_ptr,type);
-    socket_ptr.reset();
+    // shutdown(*socket_ptr,type);
+    // socket_ptr.reset();
     type=other.type;
     socket_ptr=std::move(other.socket_ptr);
     other.socket_ptr.reset();
@@ -859,6 +862,10 @@ connection::connection(connection && other)
 connection::connection(const connection & other)
 {
     // socket_ptr.reset();
+    if(socket_ptr.get()==nullptr)
+    {
+        socket_ptr=std::make_unique <usrvNS::usocket_t>(0);
+    }
     *socket_ptr=*other.socket_ptr;
 }
 
@@ -883,7 +890,7 @@ connection::operator=(connection&& other)
     return *this;
 }
 
-usrvNS::usocket_t 
+usrvNS::usocket_t& 
 connection::operator*()
 {
     return *(this->socket_ptr);
@@ -902,6 +909,9 @@ connection::operator*() const
 
 connection::~connection()
 {
+    if(socket_ptr.get()!=nullptr)
+    if(*socket_ptr!=INVALID_SOCKET)
+    if(*socket_ptr!=0)
      shutdown(*socket_ptr,type);
 }
 
@@ -911,6 +921,7 @@ connection::operator=(usrvNS::usocket_t s)
 {
     this->type=both;
     *socket_ptr=0;
+    return *this;
 }
 
 // //write
@@ -928,5 +939,87 @@ connection::set_type(rwe_type t)
 {
     this->type=t;
 }
+
+ bool 
+ connection::operator<(const connection& other)
+ {
+     return (**this)<(*other);
+ }
+bool operator<(const connection&a,const connection&b)
+{
+    return (*a)<(*b);
+}
+//sstream << connection;
+std::ostream& operator<<(std::ostream& os, const connection& c)
+{
+    // Use an ostream_iterator to handle output of the vector
+    // using iterators.
+    
+    //--было бы круто знать сколько буфер выделять, но увы..
+    // int available;
+    // socklen_t optLen=sizeof(*c);
+    // int err=getsockopt(*c,SOL_SOCKET,SO_NREAD,&available,&optLen);
+
+    char buf[usrvNS::TCP_maxlen];
+    ssize_t n=recv(*c,buf,usrvNS::TCP_maxlen,0);
+    
+    if(n>0)
+    {
+        // buf[n]='\0';
+        std::copy(&buf[0], &buf[n-1], std::ostream_iterator<char>(os, ""));
+    }
+    return os;
+}
+
+
+//std::cin>>buf[1024];
+//sstream >> connection;
+std::istream& operator>>(std::istream& is, const connection& c)
+{
+
+     char buf[usrvNS::TCP_maxlen];
+    int len = is.rdbuf()->sgetn(buf, usrvNS::TCP_maxlen);
+
+    send(*c,buf, len, 0);
+    // tmp.c_str();
+
+    return is;
+}
+
+#include <cstring>
+std::istream& operator>>(const char* is, const connection& c)
+{
+
+    int len = std::strlen(is);
+    std::stringstream os("sent ");
+    os << send(*c,is, len, 0);
+    os<<" bytes\n";
+    return os;
+}
+// std::istream& operator>>(const char is[], const connection& c)
+// {
+
+//     int len = std::strlen(is);
+//     std::stringstream os("sent ");
+//     os << send(*c,is, len, 0);
+//     os<<" bytes\n";
+//     return os;
+// }
+
 #endif // _VERSION_0_1
 #endif // _VERSION_0_0
+
+
+
+int main(int argc, char const *argv[])
+{
+      userver server(8081);
+    
+    //====================================
+
+    while (!server.check());
+    std::cout<<"exiting\n";    
+
+    return EXIT_SUCCESS;
+    return 0;
+}
